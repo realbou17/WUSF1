@@ -14,7 +14,7 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
 - **Customization**:
     - Choose between driver's team color or a traditional color palette for telemetry channels
     - Hide input fileds for a clearer visualization
-- **Comaprison**: Compare telemetry for up to 2 drivers
+- **Comparison**: Compare telemetry for up to 2 drivers
 
 
 # ⚙️ Requirements
@@ -26,7 +26,6 @@ pip install -r requirements.txt
 - [Fastf1](https://docs.fastf1.dev/index.html)
 - Numpy
 - Dearpygui
-- OS
 - Datetime
 
 # 💻 Usage
