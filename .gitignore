@@ -1,0 +1,16 @@
+fastf1_cache/
+
+.mypy_cache/
+__pycache__/
+
+.vscode/
+.idea/
+
+node_modules
+
+*.log
+
+.DS_Store
+
+Code.exe
+*.exe
