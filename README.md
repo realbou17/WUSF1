@@ -1,7 +1,7 @@
 # WUSF1
 A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.html) and Python. 🏎️
 
-<img width="1896" height="901" alt="image" src="https://github.com/user-attachments/assets/cca294df-9d2d-422c-b228-6e159a4fcd0d" />
+<img width="1886" height="820" alt="image" src="https://github.com/user-attachments/assets/ea44b3ff-1251-4553-a6f4-885c3418eb62" />
 
 # 📋Features
 - **GUI Menu**: Allows user to easly choose the session to load, and to navigate through the menus
@@ -10,6 +10,7 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
     - Speed, RPM, Gear, Throttle, Brake (on-off), DRS (on-off)
   - 📊 Histograms: A more direct and concise alternative representation (Speed, RPM, Gear and Throttle only)
   - 🔢 Statistics: A table showing vital statistics (minimum, maximum, mean, median and standard deviation) of all available channels
+  - 🛰️ Track: The outline of the track loaded, with a dot representing the position of the car according to mouse position in the graphs
 - **All sessions available**: Watch telemetry from every session since 2018, including FPs, qualy, races and even winter tests
 - **Customization**:
     - Choose between driver's team color or a traditional color palette for telemetry channels
@@ -31,10 +32,12 @@ pip install -r requirements.txt
 # 💻 Usage
 1. In the upper left of the GUI menu **fill** following inputs, following examples:
 
-    <img width="329" height="207" alt="image" src="https://github.com/user-attachments/assets/8fc45e63-84b8-4b47-a620-605ddd480570" />
-    
+    \*latest session will be loaded by default
+
+    <img width="390" height="266" alt="image" src="https://github.com/user-attachments/assets/fb310999-c941-403f-8f10-fcacf9d1b81d" />
+
     - **Session**: R -> Race, Q -> Qualy , FPx -> Practice x (Testing sessions considered as practice sessions)
-    - **Track**: Type the name of the track/country
+    - **Track**: Select the name of the track/country by unfolding the dropdown menu
     - **Year**: From 2018 to the present
     - **Driver**: His abbreviation (3 capital letters)
 
@@ -42,7 +45,7 @@ pip install -r requirements.txt
     - If desired, click the 'Compare' checkbox to show the second driver input field
 2. Click **'Show Telemetry'** to display data
     - Select the lap scrolling trough the horizontal menu, fastest lap will be displayed in purple and loaded first by default
-3. Choose representation by clicking on **'View'** in the top left
+3. Choose representation by switching **tabs** in the top left
 4. Happy Telemetry!
 
 
