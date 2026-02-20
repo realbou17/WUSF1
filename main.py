@@ -34,6 +34,8 @@ class AppState:
         self.session_order = {}
         self.track_default = ""
         self.testing = 0
+        self.test_number = 0
+        self.calendar = {}
 
         # Colors
         self.use_team_colors = False
@@ -70,27 +72,30 @@ def load_latest_session():
         state.schedule = fastf1.get_event_schedule(state.latest_year, include_testing=True)
         past_events = state.schedule[state.schedule['EventDate'] < now]
         print("There are no past events for", state.latest_year)
-
+    state.calendar = state.schedule['EventName'].tolist()
     last_event = past_events.iloc[-1]
     state.track = last_event['EventName']
     test =  state.schedule[state.schedule['EventFormat'] == 'testing']
-
     if last_event['RoundNumber'] == 0: 
         state.session_order.clear()
         state.session_order = ['Practice 3', 'Practice 2', 'Practice 1']
         state.testing = 1
         session_found = 0
-        test_number = len(test)
-        for i in range(test_number, 0, -1):
+        test_count = len(test)
+        for i in range(test_count, 0, -1):
             for order in state.session_order:
-                state.session = fastf1.get_testing_session(state.latest_year, i, order)
-                state.session.load(laps=True, telemetry=False, weather=False)
-                if state.session.date < now and not state.session.laps.empty:
+                try:
+                    state.session = fastf1.get_testing_session(state.latest_year, i, order)
+                    state.session.load(laps=True, telemetry=False, weather=False)
+                    if state.session.date < now and not state.session.laps.empty:
                         session_found = 1
                         state.sessionID = order
                         print(f"Loaded latest session: {state.track} - {order}")
                         state.track_default = state.track + " " + str(i)
-                break
+                        state.test_number = i
+                        break
+                except Exception as e:
+                    continue
             if session_found:
                 break        
     else:
@@ -106,6 +111,9 @@ def load_latest_session():
                     print(f"Loaded latest session: {state.track} - {order}")
             except:
                 continue
+    if state.latest_year == 2026:
+        state.calendar[0] = "Pre-Season Testing 1"
+        state.calendar[1] = "Pre-Season Testing 2"
 load_latest_session()
 
 def create_interface():
@@ -236,9 +244,9 @@ def create_interface():
                 dpg.add_text("Session:")
                 dpg.add_combo(items=state.session_order, tag="session_input", width=260, default_value=state.sessionID)
                 dpg.add_text("Track:")
-                dpg.add_combo(items=state.schedule['EventName'].tolist(), tag="track_input", width=260, default_value=state.track_default, callback=refresh_track)
+                dpg.add_combo(items=state.calendar, tag="track_input", width=260, default_value=state.track_default, callback=refresh_session)
                 dpg.add_text("Year:")
-                dpg.add_input_text(tag="year_input", hint="E.g: 2025", width=260, default_value=state.latest_year)
+                dpg.add_input_text(tag="year_input", hint="E.g: 2025", width=260, default_value=state.latest_year, callback=refresh_track)
                 dpg.add_text("Driver (3 capital letters):")
                 dpg.add_input_text(tag="driver_input", hint="E.g: PIA", width=260, default_value="PIA")
                 with dpg.group(tag="driver_compare", show=False):
@@ -299,14 +307,27 @@ def create_interface():
     dpg.start_dearpygui()
     dpg.destroy_context()
 
-def refresh_track():
-    if dpg.get_value("track_input") != "Pre-Season Testing":
+def refresh_session():
+    track = dpg.get_value("track_input")
+    if not "Pre-Season" in track:
         state.session_order = ['R', 'Q', 'S', 'SQ', 'SS', 'FP3', 'FP2', 'FP1']
         state.testing = 0
     else: 
         state.session_order = ['Practice 1', 'Practice 2', 'Practice 3']
         state.testing = 1
     dpg.configure_item("session_input", items=state.session_order)
+
+def refresh_track():
+    year = int(dpg.get_value("year_input"))
+    if year > 2018:
+        state.schedule = fastf1.get_event_schedule(year, include_testing=True)
+        state.calendar = state.schedule['EventName'].tolist()
+        dpg.configure_item("track_input", items=state.calendar)
+
+    if year == 2026:
+        state.calendar[0] = "Pre-Season Testing 1"
+        state.calendar[1] = "Pre-Season Testing 2"
+        dpg.configure_item("track_input", items=state.calendar)
 
 def switch_view(view):
     state.current_view = view
@@ -388,7 +409,6 @@ def load_session():
     year = dpg.get_value("year_input")
     state.driver = dpg.get_value("driver_input")
     state.driver2 = dpg.get_value("driver2_input") if Compare else {}
-
     if not state.track or not year or not state.driver:
         dpg.set_value("result_text", "Error: Complete state.track, year and driver.")
         return False
@@ -401,7 +421,12 @@ def load_session():
 
     try:
         if state.testing == 1:
-            state.session = fastf1.get_testing_session(year_int, 1, session_input)
+            if year_int == 2026:
+                if state.track == "Pre-Season Testing 1":
+                    state.test_number = 1
+                elif state.track == "Pre-Season Testing 2": 
+                    state.test_number = 2
+            state.session = fastf1.get_testing_session(year_int, state.test_number, session_input)
             state.session.load()
         else:
             state.session = fastf1.get_session(year_int, state.track, session_input)
