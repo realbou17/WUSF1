@@ -1,7 +1,7 @@
 # WUSF1
 A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.html) and Python. 🏎️
 
-<img width="1886" height="820" alt="image" src="https://github.com/user-attachments/assets/ea44b3ff-1251-4553-a6f4-885c3418eb62" />
+<img width="1886" height="820" alt="image" src="./resources/Graphs.png" />
 
 # 📋Features
 - **GUI Menu**: Allows user to easly choose the session to load, and to navigate through the menus
@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
     \*latest session will be loaded by default
 
-    <img width="390" height="266" alt="image" src="https://github.com/user-attachments/assets/fb310999-c941-403f-8f10-fcacf9d1b81d" />
+    <img width="390" height="266" alt="image" src="./resources/Inputfield.png" />
 
     - **Session**: R -> Race, Q -> Qualy , FPx -> Practice x (Testing sessions considered as practice sessions)
     - **Track**: Select the name of the track/country by unfolding the dropdown menu
