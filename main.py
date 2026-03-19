@@ -36,6 +36,8 @@ class AppState:
         self.testing = 0
         self.test_number = 0
         self.calendar = {}
+        self.session_list = []
+        self.is_sprint = False
 
         # Colors
         self.use_team_colors = False
@@ -60,6 +62,23 @@ state = AppState()
 cache_dir = "fastf1_cache"
 os.makedirs(cache_dir, exist_ok=True)
 fastf1.Cache.enable_cache(cache_dir)
+
+def is_sprint_weekend(year, track):
+    schedule = fastf1.get_event_schedule(int(year))
+    event = schedule[schedule['EventName'] == track]
+    if event['EventFormat'].values[0] == 'sprint':
+        state.is_sprint = True
+        state.session_list = ['R', 'SQ', 'FP2', 'Q', 'FP1']
+    elif event['EventFormat'].values[0] == 'sprint_shootout':
+        state.is_sprint = True
+        state.session_list = ['R', 'S', 'SS', 'Q', 'FP1']
+    elif event['EventFormat'].values[0] == 'sprint_qualifying':
+        state.is_sprint = True
+        state.session_list = ['R', 'Q', 'S', 'SQ', 'FP1']
+    else: 
+        state.is_sprint = False
+        state.session_list = ['R', 'Q', 'FP3', 'FP2', 'FP1']
+    return state.is_sprint, state.session_list
 
 def load_latest_session():
     now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -102,15 +121,22 @@ def load_latest_session():
         state.track_default = state.track
         state.session_order = ['R', 'Q', 'S', 'SQ', 'SS', 'FP3', 'FP2', 'FP1']
         state.testing = 0
+        latest_session_date = None
+        latest_session_id = None
         for order in state.session_order:
             try:
                 state.session = fastf1.get_session(state.latest_year, state.track, order)
                 state.session.load(laps=False, telemetry=False, weather=False)
+                if len(state.session.drivers) != 0:
+                    state.session_list.append(order)
                 if state.session.date < now:
-                    state.sessionID = order
+                    if latest_session_date is None or state.session.date > latest_session_date:
+                        latest_session_date = state.session.date
+                        latest_session_id = order
                     print(f"Loaded latest session: {state.track} - {order}")
             except:
                 continue
+        state.sessionID = latest_session_id
     if state.latest_year == 2026:
         state.calendar[0] = "Pre-Season Testing 1"
         state.calendar[1] = "Pre-Season Testing 2"
@@ -242,7 +268,7 @@ def create_interface():
             with dpg.group(horizontal=False, tag="info", width=380):
                 dpg.add_text("Fill inputs", wrap=500)
                 dpg.add_text("Session:")
-                dpg.add_combo(items=state.session_order, tag="session_input", width=260, default_value=state.sessionID)
+                dpg.add_combo(items=state.session_list, tag="session_input", width=260, default_value=state.sessionID)
                 dpg.add_text("Track:")
                 dpg.add_combo(items=state.calendar, tag="track_input", width=260, default_value=state.track_default, callback=refresh_session)
                 dpg.add_text("Year:")
@@ -309,13 +335,14 @@ def create_interface():
 
 def refresh_session():
     track = dpg.get_value("track_input")
+    year = int(dpg.get_value("year_input"))
     if not "Pre-Season" in track:
-        state.session_order = ['R', 'Q', 'S', 'SQ', 'SS', 'FP3', 'FP2', 'FP1']
+        is_sprint_weekend(year, track)
         state.testing = 0
     else: 
         state.session_order = ['Practice 1', 'Practice 2', 'Practice 3']
         state.testing = 1
-    dpg.configure_item("session_input", items=state.session_order)
+    dpg.configure_item("session_input", items=state.session_list)
 
 def refresh_track():
     year = int(dpg.get_value("year_input"))
