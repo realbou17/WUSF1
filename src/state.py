@@ -4,7 +4,7 @@ from typing import Any
 class AppState:
     def __init__(self):     
         # UI
-        self.current_view = "telemetry"
+        self.current_view = "graphs"
         self.sessionID = ""
         self.track_default = ""
         self.latest_year = 0
