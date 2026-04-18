@@ -65,11 +65,16 @@ def default_themes():
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 105, 180, 255), category=dpg.mvThemeCat_Plots)  # Pink
         with dpg.theme_component(dpg.mvBarSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 105, 180, 200), category=dpg.mvThemeCat_Plots)
+        with dpg.theme_component(dpg.mvScatterSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 105, 180, 255), category=dpg.mvThemeCat_Plots)
+
     with dpg.theme(tag="rpm_theme2"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
         with dpg.theme_component(dpg.mvBarSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
+        with dpg.theme_component(dpg.mvScatterSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
 
     with dpg.theme(tag="gear_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
@@ -100,6 +105,17 @@ def default_themes():
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
 
+    with dpg.theme(tag="glon_theme"):
+        with dpg.theme_component(dpg.mvLineSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)  # Cyan    
+        with dpg.theme_component(dpg.mvScatterSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)             
+    with dpg.theme(tag="glon_theme2"):
+        with dpg.theme_component(dpg.mvLineSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
+        with dpg.theme_component(dpg.mvScatterSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots) 
+
     with dpg.theme(tag="drs_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)  # Yellow
@@ -116,7 +132,7 @@ def default_themes():
 def hex_to_rgb():
     hex_enabled = dpg.get_value("hex")
     Compare = dpg.get_value("Compare")
-    channels = ["speed", "rpm", "gear", "throttle", "brake", "drs"]
+    channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
 
     if hex_enabled:
         try:
@@ -141,6 +157,8 @@ def hex_to_rgb():
                         dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[0], category=dpg.mvThemeCat_Plots)
                     with dpg.theme_component(dpg.mvBarSeries):
                         dpg.add_theme_color(dpg.mvPlotCol_Fill, state.driver_colors[0], category=dpg.mvThemeCat_Plots)  
+                    with dpg.theme_component(dpg.mvScatterSeries):
+                        dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[0], category=dpg.mvThemeCat_Plots)  
 
             if Compare:
                 state.hex_colors = fastf1.plotting.get_driver_color(state.drivers[1], state.session).lstrip('#')
@@ -155,23 +173,31 @@ def hex_to_rgb():
                             dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[1], category=dpg.mvThemeCat_Plots)
                         with dpg.theme_component(dpg.mvBarSeries):
                             dpg.add_theme_color(dpg.mvPlotCol_Fill, state.driver_colors[1], category=dpg.mvThemeCat_Plots)  
+                        with dpg.theme_component(dpg.mvScatterSeries):
+                            dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[1], category=dpg.mvThemeCat_Plots)  
         except Exception as e:
             dpg.set_value("result_text", f"Team color error: {e}")
     bind_themes()
             
 def bind_themes():
-    channels = ["speed", "rpm", "gear", "throttle", "brake", "drs"]
+    channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
     hex_enabled = dpg.get_value("hex")
+    tab = ""
+    
     if hex_enabled:
         suffix = "T"
     else:
         suffix = ""
-    if state.current_view == "histogram":
+
+    if state.current_view == "graphs":
+        tab = ""
+        channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
+    elif state.current_view == "histogram":
         tab = "_hist"
         channels = channels[:4]
-    elif state.current_view == "telemetry":
-        tab = ""
-        channels = ["speed", "rpm", "gear", "throttle", "brake", "drs"]
+    elif state.current_view == "scatter":
+        tab = "_sct"
+        channels = ["rpm", "glon"]
     elif state.current_view == "stats":
         tab = "stats"
 
