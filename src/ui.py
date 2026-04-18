@@ -3,6 +3,7 @@ from state import state
 from data_loader import load_latest_session, is_sprint_weekend, load_session, get_lap_numbers, get_calendar, extract_telemetry
 from themes import hex_to_rgb, default_themes
 from plots import *
+import sys
 
 def create_interface(): 
     load_latest_session()
@@ -11,13 +12,15 @@ def create_interface():
     dpg.create_viewport(title="WUS Telemetry", width=860, height=1100)
 
     with dpg.window(label="Real F1 Telemetry Graphs", width=1920, height=1008, tag="main_window"):
-        dpg.toggle_viewport_fullscreen()
+        if sys.platform != "linux":       # Add Linux compatibility
+            dpg.toggle_viewport_fullscreen()
         dpg.bind_item_theme("main_window", "main_theme")
 
-        with dpg.tab_bar(label="view"):
-            dpg.add_tab_button(label="Telemetry Graphs", callback=lambda: switch_view("telemetry"))
-            dpg.add_tab_button(label="Histogram", callback=lambda: switch_view("histogram"))
-            dpg.add_tab_button(label="Statistics", callback=lambda: switch_view("stats"))
+        with dpg.tab_bar(label="view", tag="tab"):
+            dpg.add_tab_button(label="Graphs", tag="graphs", callback=lambda: switch_view("graphs"))
+            dpg.add_tab_button(label="Histogram", tag="histogram", callback=lambda: switch_view("histogram"))
+            dpg.add_tab_button(label="Scatter", tag="scatter", callback=lambda: switch_view("scatter"))
+            dpg.add_tab_button(label="Statistics", tag="statistics", callback=lambda: switch_view("stats"))
 
         with dpg.group(horizontal=True, tag="main_row"):
             with dpg.group(horizontal=False, tag="info", width=380):
@@ -63,17 +66,25 @@ def create_interface():
         dpg.add_checkbox(label="Show info", callback=hide_inputs, tag="Info", default_value=True)
 
         # Plots containers
-        for ch in ["speed", "rpm", "gear", "throttle", "brake", "drs"]:
+        for ch in ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]:
             with dpg.child_window(tag=f"plot_container_{ch}", width=-1, height=160, show=True):
                 pass
+
         # Histogram container
         with dpg.group(horizontal=False):
             with dpg.child_window(width=0, autosize_x=True, tag="hist_container", show=False):
                 pass
+
+        # Scatter containers
+        for ch in ["rpm", "glon"]:
+            with dpg.child_window(tag=f"{ch}_vs_speed", width=-1, height=500, show=False):
+                pass
+
         # Statistics container
         with dpg.group(horizontal=True):
             with dpg.child_window(width=0, autosize_x=False, tag="stats", show=False):
                 pass
+            
         # Mouse tracking
         with dpg.handler_registry():
             dpg.add_mouse_move_handler(callback=update_car_position)
@@ -86,11 +97,13 @@ def create_interface():
 
 def switch_view(view):
     state.current_view = view
+
     view_panels = {
-        "telemetry": ["plot_container_speed", "plot_container_rpm", "plot_container_gear",
-                      "plot_container_throttle", "plot_container_brake", "plot_container_drs"],
+        "graphs": ["plot_container_speed", "plot_container_rpm", "plot_container_gear",
+                    "plot_container_throttle", "plot_container_brake", "plot_container_glon", "plot_container_drs"],
         "histogram": ["hist_container"],
-        "stats":     ["stats"]
+        "scatter": ["rpm_vs_speed", "glon_vs_speed"],
+        "stats": ["stats"]
     }
 
     for panels_in_view in view_panels.values():
@@ -180,7 +193,6 @@ def callback_select_lap2(sender, app_data, user_data):
 
 
 def load_and_update():
-    compare = dpg.get_value("Compare")
     state.telemetry_data = []
 
     for i, driver in enumerate(state.drivers):
