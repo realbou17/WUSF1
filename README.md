@@ -6,11 +6,12 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
 # 📋Features
 - **GUI Menu**: Allows user to easly choose the session to load, and to navigate through the menus
 - **Multiple representations**
-  - 📈 Graphs: A traditional and clean way to exploit available data
-    - Speed, RPM, Gear, Throttle, Brake (on-off), DRS (on-off)
-  - 📊 Histograms: A more direct and concise alternative representation (Speed, RPM, Gear and Throttle only)
-  - 🔢 Statistics: A table showing vital statistics (minimum, maximum, mean, median and standard deviation) of all available channels
-  - 🛰️ Track: The outline of the track loaded, with a dot representing the position of the car according to mouse position in the graphs
+  - 📈 **Graphs**: A traditional and clean way to exploit available data
+    - Speed, RPM, Gear, Throttle, Brake (on-off), Glon, DRS (on-off)
+  - 📊 **Histograms**: A more direct and concise alternative representation (Speed, RPM, Gear and Throttle only)
+  - 🔵 **Scatter**: A visual correlation tool that plots two channels against each other to reveal relationships — ideal for variables like RPM vs Speed (for gear ratios and optimization) or Glon vs Speed (to spot car balance at different speeds)
+  - 🔢 **Statistics**: A table showing vital statistics (minimum, maximum, mean, median and standard deviation) of all available channels
+  - 🛰️ **Track**: The outline of the track loaded, with a dot representing the position of the car according to mouse position in the graphs
 - **All sessions available**: Watch telemetry from every session since 2018, including FPs, qualy, races and even winter tests
 - **Customization**:
     - Choose between driver's team color or a traditional color palette for telemetry channels
@@ -23,11 +24,11 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
 ```bash
 pip install -r requirements.txt
 ```
-- Python 3.8+
+- Python 3.10+
 - [Fastf1](https://docs.fastf1.dev/index.html)
 - Numpy
 - Dearpygui
-- Datetime
+...
 
 # 💻 Usage
 1. In the upper left of the GUI menu **fill** following inputs, following examples:
