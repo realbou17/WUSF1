@@ -2,6 +2,8 @@ import fastf1
 from state import state
 from datetime import datetime, timezone
 import os
+import numpy as np
+from scipy.interpolate import interp1d
 
 # Cache setup
 cache_dir = "fastf1_cache"
@@ -155,6 +157,27 @@ def extract_telemetry(driver, lap_num):
         "DRS": [1 if x >= 10 else 0 for x in tel["DRS"].to_list()],
         "Time": tel["Time"].dt.total_seconds().to_list(),
         "x": tel["X"].to_list(),
-        "y": tel["Y"].to_list(),
+        "y": tel["Y"].to_list()
     }
+
+    # Longitudinal forces calculation -> d(V_car)
+    # Get variables
+    time = np.array(data["Time"])
+    speed = np.array(data["Speed"]) / 3.6  # to m/s
+
+    # Interpolation to constant 10 Hz
+    t_uniform = np.arange(time[0], time[-1], 0.1)  # step of 0.1s = 10 Hz
+    interp_fn  = interp1d(time, speed, kind="linear", fill_value="extrapolate")
+    speed_uniform = interp_fn(t_uniform)
+
+    # Derivate over "clean" signal
+    G_MAX = 6.5  # approximate maximum value for F1
+    glon_uniform  = np.gradient(speed_uniform, t_uniform) / 9.81 # to G
+    glon_clip = np.clip(glon_uniform, -G_MAX, G_MAX)  # limits impossible max/min values
+
+    # Reinterpolate back to original signal
+    glon_interp = interp1d(t_uniform, glon_clip, kind="linear", fill_value="extrapolate")
+    glon = glon_interp(time)
+    data["glon"] = glon.tolist()
+    
     return data, ""
