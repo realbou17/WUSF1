@@ -13,7 +13,8 @@ def update_plots():
         return
 
     for item in ["my_hist_speed", "my_hist_rpm", "my_hist_gear", "my_hist_throttle", "my_hist_brake",
-                "my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_drs"]:
+                "my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_glon", "my_plot_drs",
+                "my_rpm_vs_speed", "my_glon_vs_speed"]:
      if dpg.does_item_exist(item):
          dpg.delete_item(item)
 
@@ -27,7 +28,8 @@ def update_plots():
     maxThrottle = max(state.telemetry_data[0]["Throttle"])
     minBrake = min(state.telemetry_data[0]["Brake"]) - 0.035
     maxBrake = max(state.telemetry_data[0]["Brake"]) + 0.05
-    maxTime = max(state.telemetry_data[0]["Time"]) + 2
+    minGlon = min(state.telemetry_data[0]["glon"]) - 1
+    maxGlon = max(state.telemetry_data[0]["glon"]) + 1
 
     dpg.configure_item("track_line", y=state.telemetry_data[0]["y"], x=state.telemetry_data[0]["x"])
 
@@ -42,29 +44,42 @@ def update_plots():
         maxThrottle = max(maxThrottle, max(state.telemetry_data[1]["Throttle"]))
         minBrake = min(minBrake, min(state.telemetry_data[1]["Brake"]) - 0.035)
         maxBrake = max(maxBrake, max(state.telemetry_data[1]["Brake"]) + 0.05)    
+        minGlon = min(minGlon, min(state.telemetry_data[1]["glon"]) - 1)
+        maxGlon = max(maxGlon, max(state.telemetry_data[1]["glon"]) + 1)
     
     channel_config = [
-        ("speed",    "Speed",    "(km/h)",  "%.3g", minSpeed,    maxSpeed),
-        ("rpm",      "RPM",      "RPM",     None,   minRPM,      maxRPM),
-        ("gear",     "Gear",     "Count",   "%0.1f",minGear,     maxGear),
-        ("throttle", "Throttle", "%",       "%.3g", minThrottle-2, maxThrottle+3),
-        ("brake",    "Brake",    "on-off",  "%.3g", minBrake,    maxBrake),
-        ("drs",      "DRS",      "on-off",  "%.3g", -0.05,       1.05),
-    ]       
+        ("speed", "Speed", "%.3g", minSpeed, maxSpeed),
+        ("rpm", "RPM", "%.3g", minRPM, maxRPM),
+        ("gear", "Gear", "%0.1f",minGear, maxGear),
+        ("throttle", "Throttle", "%.3g", minThrottle-2, maxThrottle+3),
+        ("brake", "Brake",  "%.3g", minBrake, maxBrake),
+        ("glon", "glon", "%3.0f", minGlon, maxGlon),
+        ("drs", "DRS", "%.3g", -0.05, 1.05)    
+    ]
 
-    if state.current_view == "telemetry":
-        real_height = ((dpg.get_item_height("plot_container_speed")-17) + (dpg.get_item_height("plot_container_rpm")-17) + (dpg.get_item_height("plot_container_gear")-17) + (dpg.get_item_height("plot_container_throttle")-17) + (dpg.get_item_height("plot_container_brake")-17) + (dpg.get_item_height("plot_container_drs")-17)) / 6 
-        for ch, label, y_label, tick_fmt, ymin, ymax in channel_config:
-            plot = dpg.add_plot(label=label, height=real_height, width=-1, tag=f"my_plot_{ch}", parent=f"plot_container_{ch}", crosshairs=True, zoom_mod=True, no_frame=True, no_menus=True)
+    # Remove inactive DRS from 2026
+    if year_int >= 2026:
+        del channel_config[-1]
+        dpg.hide_item("plot_container_drs")
+    else:
+        if state.current_view == "graphs":
+            dpg.show_item("plot_container_drs")
+
+    if state.current_view == "graphs":
+        real_height = ((dpg.get_item_height("plot_container_speed")-17) + (dpg.get_item_height("plot_container_rpm")-17) + (dpg.get_item_height("plot_container_gear")-17) + (dpg.get_item_height("plot_container_throttle")-17) + (dpg.get_item_height("plot_container_brake")-17) + ((dpg.get_item_height("plot_container_drs")-17) if year_int < 2026 else 0) + (dpg.get_item_height("plot_container_glon")-17)) / len(channel_config)
+        for ch, label, tick_fmt, ymin, ymax in channel_config:
+            plot = dpg.add_plot(height=real_height, width=-1, tag=f"my_plot_{ch}", parent=f"plot_container_{ch}", crosshairs=True, zoom_mod=True, no_frame=True, no_title=True, no_menus=True)
             dpg.add_plot_axis(dpg.mvXAxis, parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=True)
-            dpg.add_plot_axis(dpg.mvYAxis, label=y_label, parent=plot, tag=f"y_axis_{ch}", no_highlight=True, tick_format=tick_fmt)
+            dpg.add_plot_axis(dpg.mvYAxis, label=label, parent=plot, tag=f"y_axis_{ch}", no_highlight=True, tick_format=tick_fmt)
             dpg.add_line_series(x=state.telemetry_data[0]["Distance"], y=state.telemetry_data[0][label], parent=f"y_axis_{ch}", label=f"{state.drivers[0]} {label}", tag=f"{ch}_line")
-            if Compare and state.telemetry_data[1]:
+            if Compare:
                 dpg.add_line_series(x=state.telemetry_data[1]["Distance"], y=state.telemetry_data[1][label], parent=f"y_axis_{ch}", label=f"{state.drivers[1]} {label}", tag=f"{ch}_line2")
             dpg.set_axis_limits(f"y_axis_{ch}", ymin=ymin, ymax=ymax)
-
+            if ch == "rpm":
+                dpg.set_axis_ticks("y_axis_rpm", (("7k", 7000), ("8k", 8000), ("9k", 9000), ("10k", 10000), ("11k", 11000), ("12k", 12000)))
+    
     elif state.current_view == "histogram":
-        for ch, label, y_label, tick_fmt, ymin, ymax in channel_config[:4]:
+        for ch, label, tick_fmt, ymin, ymax in channel_config[:4]:
             hist = dpg.add_plot(height=218, width=-1, label=label, tag=f"my_hist_{ch}", parent="hist_container", no_frame=True, no_menus=True)
             dpg.add_plot_axis(dpg.mvXAxis, parent=hist, tag=f"x_axis_hist_{ch}", no_highlight=True)
             dpg.add_plot_axis(dpg.mvYAxis, parent=hist, tag=f"y_axis_hist_{ch}", no_highlight=True)
@@ -84,6 +99,23 @@ def update_plots():
                 dpg.set_axis_limits(f"x_axis_hist_{ch}", ymin=ymin, ymax=ymax)
                 dpg.set_axis_limits(f"y_axis_hist_{ch}", ymin=0, ymax=max(hist_s_percent2))
 
+    elif state.current_view == "scatter":
+        # RPM vs Speed
+        scatterR = dpg.add_plot(height=483, width=-1, tag="my_rpm_vs_speed", parent="rpm_vs_speed", crosshairs=True, zoom_mod=True, no_frame=True, no_title=True, no_menus=True)
+        dpg.add_plot_axis(dpg.mvXAxis,label="Speed", parent=scatterR, tag="x_axis_glon_r", no_highlight=True)
+        dpg.add_plot_axis(dpg.mvYAxis, label="RPM", parent=scatterR, tag="y_axis_speed_r", no_highlight=True)
+        dpg.add_scatter_series(x = state.telemetry_data[0]["Speed"], y = state.telemetry_data[0]["RPM"], parent="y_axis_speed_r", tag="rpm_line_sct")
+        if Compare:
+            dpg.add_scatter_series(x = state.telemetry_data[1]["Speed"], y = state.telemetry_data[1]["RPM"], parent="y_axis_speed_r", tag="rpm_line_sct2")
+        
+        # Glon vs Speed
+        scatterG = dpg.add_plot(height=483, width=-1, tag="my_glon_vs_speed", parent="glon_vs_speed", crosshairs=True, zoom_mod=True, no_frame=True, no_title=True, no_menus=True)
+        dpg.add_plot_axis(dpg.mvXAxis, label="Speed", parent=scatterG, tag="x_axis_glon_g", no_highlight=True)
+        dpg.add_plot_axis(dpg.mvYAxis, label="Longitudinal Forces (G)", parent=scatterG, tag="y_axis_speed_g", no_highlight=True)
+        dpg.add_scatter_series(x = state.telemetry_data[0]["Speed"], y = state.telemetry_data[0]["glon"], parent="y_axis_speed_g", tag="glon_line_sct")
+        if Compare:
+            dpg.add_scatter_series(x = state.telemetry_data[1]["Speed"], y = state.telemetry_data[1]["glon"], parent="y_axis_speed_g", tag="glon_line_sct2")
+
     elif state.current_view == "stats":
         # Delete table if it exists
         if dpg.does_item_exist("stats_table"):
@@ -91,11 +123,11 @@ def update_plots():
 
         variables = []
         if Compare:
-            for ch, label, y_label, tick_fmt, ymin, ymax in channel_config:
+            for ch, label, tick_fmt, ymin, ymax in channel_config:
                 variables.append((f"{state.drivers[0]} {label}", state.telemetry_data[0][label]))
                 variables.append((f"{state.drivers[1]} {label}", state.telemetry_data[1][label]))
         else:
-            for ch, label, y_label, tick_fmt, ymin, ymax in channel_config:
+            for ch, label, tick_fmt, ymin, ymax in channel_config:
                 variables.append((f"{state.drivers[0]} {label}", state.telemetry_data[0][label]))
             
         with dpg.table(parent="stats", tag="stats_table", header_row=True, resizable=True, borders_innerH=True, borders_outerH=True, borders_innerV=True, borders_outerV=True):
@@ -128,7 +160,7 @@ def update_car_position(user_data):
     if state.telemetry_data:
         distance = state.telemetry_data[0]["Distance"]
     
-        plot_tags = ["my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_drs"]
+        plot_tags = ["my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_glon", "my_plot_drs"]
         is_hovered = any(dpg.is_item_hovered(tag)
             for tag in plot_tags
             if dpg.does_item_exist(tag))
