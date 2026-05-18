@@ -20,8 +20,9 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
 
 
 # ⚙️ Installation and Requirements
-**Windows and Linux compatible**
-Go to the latest release post and you should find both .exe and binary file ready to use, no additional requirements, without needing to have Python installed.
+**Windows and Linux compatible**: Go to the latest release post and you should find both .exe and binary file ready to use, no additional requirements, without needing to have Python installed:
+
+<img width="1273" height="761" alt="image" src="./resources/Find_executable.png" />
 
 **For Python users who want to go further:**
 ```bash
