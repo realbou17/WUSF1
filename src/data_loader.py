@@ -4,9 +4,18 @@ from datetime import datetime, timezone
 import os
 import numpy as np
 from scipy.interpolate import interp1d
+import sys
 
 # Cache setup
-cache_dir = "fastf1_cache"
+# Constant path for cache
+if getattr(sys, 'frozen', False):
+    # Executing as .exe
+    base_dir = os.path.dirname(sys.executable)
+else:
+    # Executing as script
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+cache_dir = os.path.join(base_dir, "fastf1_cache")
 os.makedirs(cache_dir, exist_ok=True)
 fastf1.Cache.enable_cache(cache_dir)
 
@@ -34,16 +43,16 @@ def load_latest_session():
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     state.latest_year = now.year
     state.schedule = fastf1.get_event_schedule(state.latest_year, include_testing=True)
-    past_events = state.schedule[state.schedule['EventDate'] < now]
-
-    while past_events.empty:
+    past_races = state.schedule[state.schedule['Session1DateUtc'] < now]          # At least one session done 
+    last_event = past_races.iloc[-1]
+    
+    while past_races.empty:
         state.latest_year -= 1
         state.schedule = fastf1.get_event_schedule(state.latest_year, include_testing=True)
-        past_events = state.schedule[state.schedule['EventDate'] < now]
+        past_races = state.schedule[state.schedule['Session1DateUtc'] < now] 
         print("There are no past events for", state.latest_year)
 
     state.calendar = state.schedule['EventName'].tolist()
-    last_event = past_events.iloc[-1]
     state.track = last_event['EventName']
     test_events = state.schedule[state.schedule['EventFormat'] == 'testing']
 
@@ -87,18 +96,19 @@ def load_latest_race(now):
     latest_date = None
     latest_id = ""
 
+    is_sprint_weekend(state.latest_year, state.track)
+
     for order in state.session_order:
         try:
             session = fastf1.get_session(state.latest_year, state.track, order)
             session.load(laps=False, telemetry=False, weather=False)
-            if len(session.drivers) != 0:
-                state.session_list.append(order)
-            if session.date < now:
+            if session.date < now and len(session.drivers) != 0:
                 if latest_date is None or session.date > latest_date:
                     latest_date = session.date
                     latest_id = order
                     state.session = session
-                print(f"Sesion detected: {state.track} - {order}")
+                    print(f"Latest session detected: {state.track} - {order}")
+                    break 
         except Exception:
             continue
 
