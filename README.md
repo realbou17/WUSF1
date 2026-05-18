@@ -19,8 +19,11 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
 - **Comparison**: Compare telemetry for up to 2 drivers
 
 
-# ⚙️ Requirements
-**Easy to install:**
+# ⚙️ Installation and Requirements
+**Windows and Linux compatible**
+Go to the latest release post and you should find both .exe and binary file ready to use, no additional requirements, without needing to have Python installed.
+
+**For Python users who want to go further:**
 ```bash
 pip install -r requirements.txt
 ```
