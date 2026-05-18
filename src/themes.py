@@ -16,22 +16,22 @@ def default_themes():
             dpg.add_theme_color(dpg.mvThemeCol_TabActive, (200, 70, 0, 255))
             dpg.add_theme_color(dpg.mvThemeCol_TitleBg, (18, 18, 22, 255))
             dpg.add_theme_color(dpg.mvThemeCol_TitleBgActive, (25, 25, 32, 255))
-            
+           
             # Text and important elements
             dpg.add_theme_color(dpg.mvThemeCol_Text, (235, 235, 240, 255))
             dpg.add_theme_color(dpg.mvThemeCol_TextDisabled, (110, 110, 125, 255))
-            
+           
             # Orange
             dpg.add_theme_color(dpg.mvThemeCol_Button, (230, 92, 0, 255))
             dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (255, 125, 40, 255))
-            dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (200, 70, 0, 255))     
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (200, 70, 0, 255))    
             dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (35, 35, 45, 255))
             dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, (50, 50, 65, 255))
             dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, (40, 40, 55, 255))
             dpg.add_theme_color(dpg.mvThemeCol_Header, (230, 92, 0, 180))
             dpg.add_theme_color(dpg.mvThemeCol_HeaderHovered, (255, 125, 40, 220))
             dpg.add_theme_color(dpg.mvThemeCol_HeaderActive, (200, 70, 0, 255))
-            
+           
             # Rounded edges and spacing
             dpg.add_theme_style(dpg.mvStyleVar_WindowRounding, 2)
             dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 2)
@@ -40,6 +40,18 @@ def default_themes():
             dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 6, 5)
             dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 8, 6)
 
+    # Deleted border and transparency for containers
+    with dpg.theme(tag="no_padding_window"):
+        with dpg.theme_component(dpg.mvChildWindow):
+            dpg.add_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0, 0))
+            dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 0, 0, category=dpg.mvThemeCat_Core)
+            dpg.add_theme_style(dpg.mvStyleVar_ItemSpacing, 0, 0, category=dpg.mvThemeCat_Core)
+   
+    # Transparent containers
+    with dpg.theme(tag="transparent_window"):
+        with dpg.theme_component(dpg.mvChildWindow):
+            dpg.add_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0, 0))
+   
     # Custom colors for graphs
     with dpg.theme(tag="track_point_theme"):
         with dpg.theme_component(dpg.mvScatterSeries):
@@ -48,7 +60,7 @@ def default_themes():
     with dpg.theme(tag="track_line_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
-            
+           
     with dpg.theme(tag="speed_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 0, 255), category=dpg.mvThemeCat_Plots)  # Blue
@@ -100,7 +112,7 @@ def default_themes():
 
     with dpg.theme(tag="brake_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 0, 0, 255), category=dpg.mvThemeCat_Plots)  # Red           
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 0, 0, 255), category=dpg.mvThemeCat_Plots)  # Red          
     with dpg.theme(tag="brake_theme2"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
@@ -109,12 +121,12 @@ def default_themes():
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)  # Cyan    
         with dpg.theme_component(dpg.mvScatterSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)             
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)            
     with dpg.theme(tag="glon_theme2"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
         with dpg.theme_component(dpg.mvScatterSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots) 
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
 
     with dpg.theme(tag="drs_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
@@ -178,12 +190,12 @@ def hex_to_rgb():
         except Exception as e:
             dpg.set_value("result_text", f"Team color error: {e}")
     bind_themes()
-            
+           
 def bind_themes():
     channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
     hex_enabled = dpg.get_value("hex")
     tab = ""
-    
+   
     if hex_enabled:
         suffix = "T"
     else:
@@ -206,10 +218,10 @@ def bind_themes():
     for channel in channels:
         if tab != "stats":
             line = f"{channel}_line{tab}"
-            tag = f"{channel}_theme{suffix}"   
+            tag = f"{channel}_theme{suffix}"  
             if dpg.does_item_exist(line):          
                 dpg.bind_item_theme(line, tag)
-                
+               
     if dpg.get_value("Compare"):
         for channel in channels:
             if tab != "stats":
