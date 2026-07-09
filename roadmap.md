@@ -2,17 +2,18 @@
 
 The idea is to keep **updating** the project:
 
-* Compare **more than 2** drivers simultaneously
 * Add **laptime info**
-
-  * **Laptime** for each lap in the slider
   * **Tyre colored** lap in the slider
   * **Sector** times
   * **Mark** sectors in the graphs
-  * Show **turn sections**
+  * Show **turn sections and sectors**
+  * Laptime **stats**
 * **Delta** graph
+* Calculate **lateral forces**
+* Estimate **gear ratios**
 * Track **colored by telemetry**
 * **Weather** conditions
+* Unified **cursor and zooom**
 * Graphs over time
 
 # Future integrations
