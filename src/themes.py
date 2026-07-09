@@ -1,6 +1,5 @@
 import dearpygui.dearpygui as dpg
 from state import state
-import fastf1
 from fastf1 import plotting
 
 def default_themes():
@@ -51,7 +50,6 @@ def default_themes():
     with dpg.theme(tag="transparent_window"):
         with dpg.theme_component(dpg.mvChildWindow):
             dpg.add_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0, 0))
-   
     # Custom colors for graphs
     with dpg.theme(tag="track_point_theme"):
         with dpg.theme_component(dpg.mvScatterSeries):
@@ -59,20 +57,15 @@ def default_themes():
             dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, (255, 105, 180, 255), category=dpg.mvThemeCat_Plots)
     with dpg.theme(tag="track_line_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)    # White
            
-    with dpg.theme(tag="speed_theme"):
+    with dpg.theme(tag="speed_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 0, 255), category=dpg.mvThemeCat_Plots)  # Blue
         with dpg.theme_component(dpg.mvBarSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Fill, (0, 0, 255, 200), category=dpg.mvThemeCat_Plots)
-    with dpg.theme(tag="speed_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
-        with dpg.theme_component(dpg.mvBarSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
 
-    with dpg.theme(tag="rpm_theme"):
+    with dpg.theme(tag="rpm_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 105, 180, 255), category=dpg.mvThemeCat_Plots)  # Pink
         with dpg.theme_component(dpg.mvBarSeries):
@@ -80,60 +73,31 @@ def default_themes():
         with dpg.theme_component(dpg.mvScatterSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 105, 180, 255), category=dpg.mvThemeCat_Plots)
 
-    with dpg.theme(tag="rpm_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
-        with dpg.theme_component(dpg.mvBarSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
-        with dpg.theme_component(dpg.mvScatterSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
-
-    with dpg.theme(tag="gear_theme"):
+    with dpg.theme(tag="gear_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 165, 0, 255), category=dpg.mvThemeCat_Plots)  # Orange
         with dpg.theme_component(dpg.mvBarSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 165, 0, 220), category=dpg.mvThemeCat_Plots)
-    with dpg.theme(tag="gear_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
-        with dpg.theme_component(dpg.mvBarSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 255, 255, 220), category=dpg.mvThemeCat_Plots)
 
-    with dpg.theme(tag="throttle_theme"):
+    with dpg.theme(tag="throttle_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 0, 255), category=dpg.mvThemeCat_Plots)  # Green
         with dpg.theme_component(dpg.mvBarSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Fill, (0, 255, 0, 255), category=dpg.mvThemeCat_Plots)
-    with dpg.theme(tag="throttle_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
-        with dpg.theme_component(dpg.mvBarSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Fill, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
 
-    with dpg.theme(tag="brake_theme"):
+    with dpg.theme(tag="brake_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 0, 0, 255), category=dpg.mvThemeCat_Plots)  # Red          
-    with dpg.theme(tag="brake_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
 
-    with dpg.theme(tag="glon_theme"):
+    with dpg.theme(tag="glon_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)  # Cyan    
         with dpg.theme_component(dpg.mvScatterSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 255, 255, 255), category=dpg.mvThemeCat_Plots)            
-    with dpg.theme(tag="glon_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
-        with dpg.theme_component(dpg.mvScatterSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)
 
-    with dpg.theme(tag="drs_theme"):
+    with dpg.theme(tag="drs_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 0, 255), category=dpg.mvThemeCat_Plots)  # Yellow
-    with dpg.theme(tag="drs_theme2"):
-        with dpg.theme_component(dpg.mvLineSeries):
-            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)  # White
 
     with dpg.theme(tag="purple_button_theme"):
         with dpg.theme_component(dpg.mvButton):
@@ -141,91 +105,137 @@ def default_themes():
             dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (160, 32, 160, 255), category=dpg.mvThemeCat_Core)  # Lighter purple
             dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (100, 0, 100, 255), category=dpg.mvThemeCat_Core)  # Darker purple
 
+def hex_to_rgb_text():
+    for i in range(len(state.session.drivers)):
+        abb = state.session.get_driver(state.session.drivers[i])["Abbreviation"]
+        state.hex_colors = plotting.get_driver_color(abb, state.session).lstrip("#")
+        state.set_driver_color(i, state.hex_colors)
+        rgb_color = state.driver_colors[i]
+        transparent_color = (*rgb_color, 100)
+        transparent_color_dark = (*rgb_color, 140)
+
+        tag_c = f"driver_check_theme{i}"
+        if dpg.does_item_exist(tag_c):
+            dpg.delete_item(tag_c)
+        with dpg.theme(tag=tag_c):
+            with dpg.theme_component(dpg.mvSelectable):
+                dpg.add_theme_color(dpg.mvThemeCol_Header, transparent_color)
+                dpg.add_theme_color(dpg.mvThemeCol_HeaderActive, transparent_color)
+                dpg.add_theme_color(dpg.mvThemeCol_HeaderHovered, transparent_color_dark)
+                dpg.add_theme_color(dpg.mvThemeCol_Text, state.driver_colors[i])
+            
+        # Bind
+        driver_number = state.session.drivers[i]
+        check = f"driver_check_{driver_number}"
+
+        if dpg.does_item_exist(check):
+            dpg.bind_item_theme(check, f"driver_check_theme{i}")   
+
 def hex_to_rgb():
     hex_enabled = dpg.get_value("hex")
-    Compare = dpg.get_value("Compare")
     channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
+    used_colors = []
 
+    # Delete previous themes
+    for i in range(len(state.drivers)):
+        if dpg.does_item_exist(f"track_point_themeT{i}"):
+            dpg.delete_item(f"track_point_themeT{i}")
+        if dpg.does_item_exist(f"track_line_themeT{i}"):
+            dpg.delete_item(f"track_line_themeT{i}")
+        for channel in channels:
+            if dpg.does_item_exist(f"{channel}_themeT{i}"):
+                dpg.delete_item(f"{channel}_themeT{i}")
+    
     if hex_enabled:
-        try:
-            state.hex_colors = fastf1.plotting.get_driver_color(state.drivers[0], state.session).lstrip('#')
-            state.set_driver_color(0, state.hex_colors)
+        # Team colors
+        for i in range(len(state.drivers)):
+            try:
+                abb = state.session.get_driver(state.drivers[i])["Abbreviation"]
+                hex_color = plotting.get_driver_color(abb, state.session).lstrip("#")
+                state.set_driver_color(i, hex_color)
+                rgb_color = state.driver_colors[i]
+                transparent_color = (*rgb_color, 100)
 
-            if dpg.does_item_exist("track_point_themeT") and dpg.does_item_exist("track_point"):
-                    dpg.bind_item_theme("track_point", "track_point_theme")
-            if dpg.does_item_exist("track_point_themeT"):
-                dpg.delete_item("track_point_themeT")
-            with dpg.theme(tag="track_point_themeT"):
-                with dpg.theme_component(dpg.mvScatterSeries):
-                    dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, state.driver_colors[0], category=dpg.mvThemeCat_Plots)
-                    dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, state.driver_colors[0], category=dpg.mvThemeCat_Plots)
-
-            for channel in channels:
-                tag = f"{channel}_themeT"
-                if dpg.does_item_exist(tag):
-                    dpg.delete_item(tag)
-                with dpg.theme(tag=tag):
-                    with dpg.theme_component(dpg.mvLineSeries):
-                        dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[0], category=dpg.mvThemeCat_Plots)
-                    with dpg.theme_component(dpg.mvBarSeries):
-                        dpg.add_theme_color(dpg.mvPlotCol_Fill, state.driver_colors[0], category=dpg.mvThemeCat_Plots)  
+                # Track Point
+                with dpg.theme(tag=f"track_point_themeT{i}"):
                     with dpg.theme_component(dpg.mvScatterSeries):
-                        dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[0], category=dpg.mvThemeCat_Plots)  
+                        dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, rgb_color, category=dpg.mvThemeCat_Plots)
+                        outline = (255, 255, 255, 200) if hex_color in used_colors else rgb_color
+                        dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, outline, category=dpg.mvThemeCat_Plots)
 
-            if Compare:
-                state.hex_colors = fastf1.plotting.get_driver_color(state.drivers[1], state.session).lstrip('#')
-                state.set_driver_color(1, state.hex_colors)
+                # Track Line
+                with dpg.theme(tag=f"track_line_themeT{i}"):
+                    with dpg.theme_component(dpg.mvLineSeries):
+                        line_color = transparent_color if hex_color in used_colors else rgb_color
+                        dpg.add_theme_color(dpg.mvPlotCol_Line, line_color, category=dpg.mvThemeCat_Plots)
 
+                # Channels
                 for channel in channels:
-                    tag2 = f"{channel}_themeT2"
-                    if dpg.does_item_exist(tag2):
-                        dpg.delete_item(tag2)
-                    with dpg.theme(tag=tag2):
+                    with dpg.theme(tag=f"{channel}_themeT{i}"):
                         with dpg.theme_component(dpg.mvLineSeries):
-                            dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[1], category=dpg.mvThemeCat_Plots)
+                            line_color = transparent_color if hex_color in used_colors else rgb_color
+                            dpg.add_theme_color(dpg.mvPlotCol_Line, line_color, category=dpg.mvThemeCat_Plots)
+                        
                         with dpg.theme_component(dpg.mvBarSeries):
-                            dpg.add_theme_color(dpg.mvPlotCol_Fill, state.driver_colors[1], category=dpg.mvThemeCat_Plots)  
+                            dpg.add_theme_color(dpg.mvPlotCol_Fill, rgb_color, category=dpg.mvThemeCat_Plots)
+                            if hex_color in used_colors:
+                                dpg.add_theme_color(dpg.mvPlotCol_Fill, transparent_color, category=dpg.mvThemeCat_Plots)
+                        
                         with dpg.theme_component(dpg.mvScatterSeries):
-                            dpg.add_theme_color(dpg.mvPlotCol_Line, state.driver_colors[1], category=dpg.mvThemeCat_Plots)  
-        except Exception as e:
-            dpg.set_value("result_text", f"Team color error: {e}")
-    bind_themes()
-           
-def bind_themes():
-    channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
-    hex_enabled = dpg.get_value("hex")
-    tab = ""
-   
-    if hex_enabled:
-        suffix = "T"
-    else:
-        suffix = ""
+                            dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, rgb_color, category=dpg.mvThemeCat_Plots)
+                            outline = (255, 255, 255, 200) if hex_color in used_colors else rgb_color
+                            dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, outline, category=dpg.mvThemeCat_Plots)
 
-    if state.current_view == "graphs":
-        tab = ""
-        channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
-    elif state.current_view == "histogram":
-        tab = "_hist"
+                used_colors.append(hex_color)
+            except Exception as e:
+                dpg.set_value("result_text", f"Team color error: {e}")
+    else:
+        pass
+
+    bind_themes()
+
+def bind_themes():
+    if not state.drivers:
+        return
+
+    hex_enabled = dpg.get_value("hex")
+    channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
+    
+    if state.current_view == "histogram":
         channels = channels[:4]
     elif state.current_view == "scatter":
-        tab = "_sct"
         channels = ["rpm", "glon"]
     elif state.current_view == "stats":
-        tab = "stats"
+        return 
 
-    dpg.bind_item_theme("track_point", f"track_point_theme{suffix}")
+    tab_suffix = ""
+    if state.current_view == "histogram":
+        tab_suffix = "_hist"
+    elif state.current_view == "scatter":
+        tab_suffix = "_sct"
 
-    for channel in channels:
-        if tab != "stats":
-            line = f"{channel}_line{tab}"
-            tag = f"{channel}_theme{suffix}"  
-            if dpg.does_item_exist(line):          
-                dpg.bind_item_theme(line, tag)
-               
-    if dpg.get_value("Compare"):
-        for channel in channels:
-            if tab != "stats":
-                line2 = f"{channel}_line{tab}2"
-                tag2 = f"{channel}_theme{suffix}2"
-                if dpg.does_item_exist(line2):  
-                    dpg.bind_item_theme(line2, tag2)
+    for i in range(state.driver_count):
+        if hex_enabled:
+            theme_suffix = f"T{i}" # Team Colors
+        else:
+            if i == state.fastest_driver_index:
+                theme_suffix = "0" # Custom colors
+            else:
+                theme_suffix = None # No theme dpg default
+
+        if theme_suffix is not None:
+            point_theme = f"track_point_theme{theme_suffix}"
+            line_theme = f"track_line_theme{theme_suffix}"
+            
+            if dpg.does_item_exist(f"track_point{i}") and dpg.does_item_exist(point_theme):
+                dpg.bind_item_theme(f"track_point{i}", point_theme)
+            
+            if dpg.does_item_exist(f"track_line{i}") and dpg.does_item_exist(line_theme):
+                dpg.bind_item_theme(f"track_line{i}", line_theme)
+
+            for channel in channels:
+                line_tag = f"{channel}_line{tab_suffix}{i}"
+                theme_tag = f"{channel}_theme{theme_suffix}"
+                
+                if dpg.does_item_exist(line_tag) and dpg.does_item_exist(theme_tag):
+                    dpg.bind_item_theme(line_tag, theme_tag)
