@@ -1,7 +1,7 @@
 # WUSF1
 A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.html) and Python. 🏎️
 
-<img width="1886" height="820" alt="image" src="./resources/Graphs.png" />
+<img width="1607" height="945" alt="image" src="./resources/Graphs.png" />
 
 # 📋Features
 - **GUI Menu**: Allows user to easly choose the session to load, and to navigate through the menus
@@ -12,11 +12,11 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
   - 🔵 **Scatter**: A visual correlation tool that plots two channels against each other to reveal relationships — ideal for variables like RPM vs Speed (for gear ratios and optimization) or Glon vs Speed (to spot car balance at different speeds)
   - 🔢 **Statistics**: A table showing vital statistics (minimum, maximum, mean, median and standard deviation) of all available channels
   - 🛰️ **Track**: The outline of the track loaded, with a dot representing the position of the car according to mouse position in the graphs
-- **All sessions available**: Watch telemetry from every session since 2018, including FPs, qualy, races and even winter tests
+- **All sessions available**: Analyze telemetry from every session since 2018, including FPs, qualy, races and even winter tests
 - **Customization**:
     - Choose between driver's team color or a traditional color palette for telemetry channels
-    - Hide input fileds for a clearer visualization
-- **Comparison**: Compare telemetry for up to 2 drivers
+    - Hide lap time selector fileds for a clearer visualization
+- **Comparison**: Compare telemetry between different drivers
 
 
 # ⚙️ Installation and Requirements
@@ -37,19 +37,18 @@ pip install -r requirements.txt
 # 💻 Usage
 1. In the upper left of the GUI menu **fill** following inputs, following examples:
 
-    \*latest session will be loaded by default
+    _*Note: Latest session will be loaded by default_
 
-    <img width="390" height="266" alt="image" src="./resources/Inputfield.png" />
+    <img width="266" height="399" alt="image" src="./resources/Inputfield.png" />
 
     - **Session**: R -> Race, Q -> Qualy , FPx -> Practice x (Testing sessions considered as practice sessions)
     - **Track**: Select the name of the track/country by unfolding the dropdown menu
-    - **Year**: From 2018 to the present
-    - **Driver**: His abbreviation (3 capital letters)
+    - **Year**: Choose from 2018 to the present by unfolding the dropdown menu
+    - **Driver**: Select driver(s) to analyze
 
-      *For more info check [Fastf1 documentation](https://docs.fastf1.dev/events.html).
-    - If desired, click the 'Compare' checkbox to show the second driver input field
+      _*Note: For more info check [Fastf1 documentation](https://docs.fastf1.dev/events.html)._
 2. Click **'Show Telemetry'** to display data
-    - Select the lap scrolling trough the horizontal menu, fastest lap will be displayed in purple and loaded first by default
+    - Select the lap scrolling trough the horizontal menu at the top, fastest lap will be displayed in purple and loaded first by default
 3. Choose representation by switching **tabs** in the top left
 4. Happy Telemetry!
 
