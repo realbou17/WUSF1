@@ -3,6 +3,7 @@ from state import state
 from datetime import datetime, timezone
 import os
 import numpy as np
+import pandas as pd
 from scipy.interpolate import interp1d
 import sys
 
@@ -39,12 +40,13 @@ def is_sprint_weekend(year, track):
 
     return state.is_sprint, state.session_list
 
-def load_latest_session():
+def load_latest_session(round_delay):
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     state.latest_year = now.year
+    state.possible_years = list(range(state.latest_year, 2017, -1))
     state.schedule = fastf1.get_event_schedule(state.latest_year, include_testing=True)
     past_races = state.schedule[state.schedule['Session1DateUtc'] < now]          # At least one session done 
-    last_event = past_races.iloc[-1]
+    last_event = past_races.iloc[-round_delay]
     
     while past_races.empty:
         state.latest_year -= 1
@@ -108,13 +110,17 @@ def load_latest_race(now):
                     latest_id = order
                     state.session = session
                     print(f"Latest session detected: {state.track} - {order}")
-                    break 
+                    break
         except Exception:
             continue
 
+    if len(session.drivers) == 0:
+        state.round_delay +=1
+        load_latest_session(state.round_delay) 
+
     state.sessionID = latest_id
 
-def load_session(year_int, session_input):
+def load_session(year_int, session_input, load):
     try:
         if state.testing == 1:
             if year_int == 2026:
@@ -122,27 +128,51 @@ def load_session(year_int, session_input):
                     state.test_number = 1
                 elif state.track == "Pre-Season Testing 2":
                     state.test_number = 2
+            else:
+                for i, track_name in enumerate(state.calendar):
+                        if track_name == state.track:
+                            state.test_number = i+1
             state.session = fastf1.get_testing_session(year_int, state.test_number, session_input)
         else:
             state.session = fastf1.get_session(year_int, state.track, session_input)
-
-        state.session.load()
+        if load == True:
+            state.session.load()
+        else:
+            state.session.load(laps=False, telemetry=False, weather=False)
     except Exception as exc:
         return False, f"The session could not be loaded: {exc}"
 
     return True, ""
+
+def refresh_done():
+    from ui import read_ui_inputs
+    year, session, ok, err = read_ui_inputs()
+    if ok and session in state.session_list and state.track in state.calendar:
+        load_session(year, session, False)
+        return ok
+    else:
+        return False
 
 def get_lap_numbers(driver):
     try:
         driver_laps = state.session.laps.pick_driver(driver)
         lap_numbers = sorted(driver_laps['LapNumber'].unique().tolist())
         fastest_num = int(driver_laps.pick_fastest()['LapNumber'])
-        return lap_numbers, fastest_num
-    except Exception:
-        return [], None
+        lap_times = []
+        for t in driver_laps["LapTime"]:
+            if pd.isna(t):
+                lap_times.append("No Time")
+            else:
+                lap_times.append(f"{int(t.total_seconds()//60)}:{t.total_seconds()%60:06.3f}")
 
+        return lap_numbers, fastest_num, lap_times
+    
+    except Exception as exc:
+        print(f"The session could not be loaded correctly: {exc}")
+        return [],  None, []
+    
 def get_calendar(year):
-    if year > 2018:
+    if year >= 2018:
         state.schedule = fastf1.get_event_schedule(year, include_testing=True)
         state.calendar = state.schedule['EventName'].tolist()
     if year == 2026:
@@ -155,7 +185,7 @@ def extract_telemetry(driver, lap_num):
         lap = driver_laps.pick_fastest() if lap_num == 0 else driver_laps.pick_lap(lap_num)
         tel = lap.get_telemetry()
     except Exception as exc:
-        return None, f"Telemetry not found: {exc}"
+        return None, f"Telemetry not found most likely due to a lack of API support"
 
     data = {
         "Distance": tel["Distance"].to_list(),
