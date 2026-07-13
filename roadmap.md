@@ -3,12 +3,12 @@
 The idea is to keep **updating** the project:
 
 * Add **laptime info**
+
   * **Tyre colored** lap in the slider
   * **Sector** times
   * **Mark** sectors in the graphs
   * Show **turn sections and sectors**
   * Laptime **stats**
-* **Delta** graph
 * Calculate **lateral forces**
 * Estimate **gear ratios**
 * Track **colored by telemetry**
