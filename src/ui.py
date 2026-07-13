@@ -64,7 +64,7 @@ def create_interface():
 
                 # Plots containers
                 with dpg.group(horizontal=False, tag="graphs_containers"):
-                    for ch in ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]:
+                    for ch in ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]:
                         with dpg.child_window(tag=f"plot_container_{ch}", width=-1,show=True, border=False):
                             dpg.bind_item_theme(f"plot_container_{ch}", "no_padding_window")
                             pass
@@ -98,7 +98,11 @@ def create_interface():
         with dpg.item_handler_registry(tag="viewport_handler"):
             dpg.add_item_resize_handler(callback=on_resize)
         dpg.bind_item_handler_registry("main_window", "viewport_handler")
-        
+
+        # Delta toggle command
+        with dpg.handler_registry():
+            dpg.add_key_press_handler(key=dpg.mvKey_D, callback=toggle_delta)
+
     hex_to_rgb_text()
     dpg.setup_dearpygui()
     if os.path.exists(icon_path) and sys.platform != "linux":
@@ -126,9 +130,16 @@ def on_resize():
 
     # Graph container height
     year = int(dpg.get_value("year_input") or 2025)
-    num_channels = 6 if year >= 2026 else 7
+    delta_shown = (state.driver_count > 1 and
+                dpg.does_item_exist("plot_container_delta") and
+                dpg.is_item_shown("plot_container_delta"))
+    if year >= 2026:
+        num_channels = 7 if delta_shown else 6
+    else:
+        num_channels = 8 if delta_shown else 7
+
     state.graph_h = available / num_channels    # The height of each graph
-    for ch in ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]:
+    for ch in ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]:
         dpg.configure_item(f"plot_container_{ch}", height=state.graph_h)
 
     # Histogram container height
@@ -146,7 +157,7 @@ def switch_view(view):
     state.current_view = view
 
     view_panels = {
-        "graphs": ["plot_container_speed", "plot_container_rpm", "plot_container_gear",
+        "graphs": ["plot_container_delta", "plot_container_speed", "plot_container_rpm", "plot_container_gear",
                     "plot_container_throttle", "plot_container_brake", "plot_container_glon", "plot_container_drs"],
         "histogram": ["hist_container"],
         "scatter": ["rpm_vs_speed", "glon_vs_speed"],
@@ -161,6 +172,21 @@ def switch_view(view):
                 else:
                     dpg.hide_item(panel)
     update_plots()
+
+def toggle_delta():
+    if state.driver_count > 1:
+        if dpg.does_item_exist("plot_container_delta") and state.current_view == "graphs":
+            if dpg.is_item_shown("plot_container_delta"):
+                dpg.hide_item("plot_container_delta")
+                state.delta = False
+            else:
+                dpg.show_item("plot_container_delta")
+                state.delta = True
+    else:
+        if dpg.does_item_exist("plot_container_delta"):
+            dpg.hide_item("plot_container_delta")
+            state.delta = False
+    on_resize()
 
 def refresh_session():
     track = dpg.get_value("track_input")
@@ -315,7 +341,20 @@ def load_and_update():
             dpg.set_value("result_text", err)
             return
         state.telemetry_data.append(data)
+    
+    # Delta calculation
+    if len(state.telemetry_data) >= 2:
+        ref_idx = state.fastest_driver_index
+        ref_data = state.telemetry_data[ref_idx]
+        ref_time = np.array(ref_data["TimeAtDist"])
 
+        for i in range(state.driver_count):
+            if i == ref_idx:
+                state.telemetry_data[i]["Delta"] = [0.0] * len(ref_time)
+            else:
+                comp_time = np.array(state.telemetry_data[i]["TimeAtDist"])
+                delta_manual = comp_time - ref_time
+                state.telemetry_data[i]["Delta"] = delta_manual.tolist()
     on_resize()
 
     lap_label = []
