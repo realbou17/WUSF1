@@ -219,5 +219,13 @@ def extract_telemetry(driver, lap_num):
     glon_interp = interp1d(t_uniform, glon_clip, kind="linear", fill_value="extrapolate")
     glon = glon_interp(time)
     data["glon"] = glon.tolist()
+
+    # Delta calculation
+    max_dist = max(data['Distance'])
+    distances = np.linspace(0, max_dist, 2000)
+    time_at_dist = np.interp(distances, data['Distance'], data['Time'])
+    
+    data["Distances"] = distances.tolist()
+    data["TimeAtDist"] = time_at_dist.tolist()
     
     return data, ""
