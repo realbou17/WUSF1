@@ -13,65 +13,47 @@ def update_plots():
         return
 
     for item in ["my_hist_speed", "my_hist_rpm", "my_hist_gear", "my_hist_throttle", "my_hist_brake",
-                "my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_glon", "my_plot_drs",
+                "my_plot_delta", "my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_glon", "my_plot_drs",
                 "my_rpm_vs_speed", "my_glon_vs_speed"]:
      if dpg.does_item_exist(item):
          dpg.delete_item(item)
 
-    minSpeed = []          
-    maxSpeed = []
-    minRPM = []
-    maxRPM = []
-    minGear = []
-    maxGear= [] 
-    minThrottle = []
-    maxThrottle = []
-    minBrake = []
-    maxBrake = []
-    minGlon = []
-    maxGlon = []
+    # Minimums and maximums
+    offsets_min = {
+        "Speed": 10, "RPM": 100, "Gear": 0.05, "Throttle": 2, "Brake": 0.035, "glon": 1, "Delta": 0
+    }
+    offsets_max = {
+        "Speed": 10, "RPM": 100, "Gear": 0.08, "Throttle": 3, "Brake": 0.05, "glon": 1, "Delta": 0
+    }
+    min_vals = {k: [] for k in ["Speed", "RPM", "Gear", "Throttle", "Brake", "glon", "Delta"]}
+    max_vals = {k: [] for k in ["Speed", "RPM", "Gear", "Throttle", "Brake", "glon", "Delta"]}
+    
+    if state.driver_count <= 1:
+        max_vals.pop("Delta", None)
+        min_vals.pop("Delta", None)
 
+    min_g = {k: None for k in min_vals.keys()}
+    max_g = {k: None for k in max_vals.keys()}
+    
     for i in range(state.driver_count):
-        minSpeed.append(min(state.telemetry_data[i]["Speed"]) - 10)          
-        maxSpeed.append(max(state.telemetry_data[i]["Speed"]) + 10)
-        minRPM.append(min(state.telemetry_data[i]["RPM"]) - 100)
-        maxRPM.append(max(state.telemetry_data[i]["RPM"]) + 100)
-        minGear.append(min(state.telemetry_data[i]["Gear"]) - 0.05)
-        maxGear.append(max(state.telemetry_data[i]["Gear"]) + 0.08)
-        minThrottle.append(min(state.telemetry_data[i]["Throttle"]))
-        maxThrottle.append(max(state.telemetry_data[i]["Throttle"]))
-        minBrake.append(min(state.telemetry_data[i]["Brake"]) - 0.035)
-        maxBrake.append(max(state.telemetry_data[i]["Brake"]) + 0.05)
-        minGlon.append(min(state.telemetry_data[i]["glon"]) - 1)
-        maxGlon.append(max(state.telemetry_data[i]["glon"]) + 1)
+        # Individual
+        telemetry = state.telemetry_data[i]
+        for key in min_vals.keys():
+            raw_min = min(telemetry[key])
+            raw_max = max(telemetry[key])
+            
+            min_vals[key].append(raw_min - offsets_min[key])
+            max_vals[key].append(raw_max + offsets_max[key])
 
-        # For more than 1 driver
+        # For more than 1 driver (Cumulative)
         if state.driver_count >= 1 and i >= 1:
-            minSpeed_g = min(minSpeed[i], minSpeed[i-1])
-            maxSpeed_g = max(maxSpeed[i], maxSpeed[i-1])
-            minRPM_g = min(minRPM[i], minRPM[i-1])
-            maxRPM_g = max(maxRPM[i], maxRPM[i-1])
-            minGear_g = min(minGear[i], minGear[i-1])
-            maxGear_g = max(maxGear[i], maxGear[i-1])
-            minThrottle_g = min(minThrottle[i], minThrottle[i-1])
-            maxThrottle_g = max(maxThrottle[i], maxThrottle[i-1])
-            minBrake_g = min(minBrake[i], minBrake[i-1])
-            maxBrake_g = max(maxBrake[i], maxBrake[i-1])
-            minGlon_g = min(minGlon[i], minGlon[i-1])
-            maxGlon_g = max(maxGlon[i], maxGlon[i-1])
+            for key in min_vals.keys():
+                min_g[key] = min(min_vals[key][i], min_g[key])
+                max_g[key] = max(max_vals[key][i], max_g[key])
         else:
-            minSpeed_g = minSpeed[i]
-            maxSpeed_g = maxSpeed[i]
-            minRPM_g = minRPM[i] 
-            maxRPM_g = maxRPM[i]
-            minGear_g = minGear[i]
-            maxGear_g = maxGear[i]
-            minThrottle_g = minThrottle[i]
-            maxThrottle_g = maxThrottle[i]
-            minBrake_g = minBrake[i]
-            maxBrake_g = maxBrake[i]
-            minGlon_g = minGlon[i]
-            maxGlon_g = maxGlon[i]
+            for key in min_vals.keys():
+                min_g[key] = min_vals[key][i]
+                max_g[key] = max_vals[key][i]
 
     # Track trace
     for d in range(1, 22):
@@ -93,13 +75,13 @@ def update_plots():
         dpg.fit_axis_data("x_axis")
 
     channel_config = [
-        ("speed", "Speed", "%.3g", minSpeed_g, maxSpeed_g),
-        ("rpm", "RPM", "%.3g", minRPM_g, maxRPM_g),
-        ("gear", "Gear", "%0.1f",minGear_g, maxGear_g),
-        ("throttle", "Throttle", "%.3g", minThrottle_g-2, maxThrottle_g+3),
-        ("brake", "Brake",  "%.3g", minBrake_g, maxBrake_g),
-        ("glon", "glon", "%3.0f", minGlon_g, maxGlon_g),
-        ("drs", "DRS", "%.3g", -0.05, 1.05)    
+        ("speed", "Speed", "%4.0f", min_g["Speed"], max_g["Speed"]),
+        ("rpm", "RPM", "%4.0f", min_g["RPM"], max_g["RPM"]),
+        ("gear", "Gear", "%4.0f",min_g["Gear"], max_g["Gear"]),
+        ("throttle", "Throttle", "%4.0f", min_g["Throttle"], max_g["Throttle"]),
+        ("brake", "Brake",  "%4.0f", min_g["Brake"], max_g["Brake"]),
+        ("glon", "glon", "%4.1f", min_g["glon"], max_g["glon"]),
+        ("drs", "DRS", "%4.0f", -0.05, 1.05)    
     ]
 
     # Remove inactive DRS from 2026
@@ -110,21 +92,31 @@ def update_plots():
         if state.current_view == "graphs":
             dpg.show_item("plot_container_drs")
 
+    # Remove delta for single driver
+    if state.driver_count > 1 and state.delta and state.current_view == "graphs":
+        dpg.show_item("plot_container_delta")
+        if "Delta" in min_g:
+            channel_config.insert(0, ("delta", "Delta", "%4.1f", min_g["Delta"], max_g["Delta"]))
+    else:
+        dpg.hide_item("plot_container_delta")
+
     if state.current_view == "graphs":
         for ch, label, tick_fmt, ymin, ymax in channel_config:
             plot = dpg.add_plot(height=state.graph_h, width=-1, tag=f"my_plot_{ch}", parent=f"plot_container_{ch}", crosshairs=True, zoom_mod=True, no_frame=True, no_title=True, no_menus=True)
-            dpg.add_plot_legend(parent="my_plot_speed")
+            if ch == "speed":
+                dpg.add_plot_legend(parent="my_plot_speed")
             dpg.add_plot_axis(dpg.mvXAxis, parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=True)
             if ch == channel_config[-1]:
                 dpg.add_plot_axis(dpg.mvXAxis, label="Distance (m)", parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label=label, parent=plot, tag=f"y_axis_{ch}", no_highlight=True, tick_format=tick_fmt)
             for i in range(state.driver_count):
-                dpg.add_line_series(x=state.telemetry_data[i]["Distance"], y=state.telemetry_data[i][label], parent=f"y_axis_{ch}", label=f"{state.drivers[i]}", tag=f"{ch}_line{i}")
+                x_data = state.telemetry_data[i]["Distances"] if ch == "delta" else state.telemetry_data[i]["Distance"]
+                dpg.add_line_series(x=x_data, y=state.telemetry_data[i][label], parent=f"y_axis_{ch}", label=f"{state.drivers[i]}", tag=f"{ch}_line{i}")
             dpg.set_axis_limits(f"y_axis_{ch}", ymin=ymin, ymax=ymax)
             if ch == "rpm":
-                dpg.set_axis_ticks("y_axis_rpm", (("7k", 7000), ("8k", 8000), ("9k", 9000), ("10k", 10000), ("11k", 11000), ("12k", 12000)))
+                dpg.set_axis_ticks("y_axis_rpm", ((" 7k", 7000), (" 8k", 8000), (" 9k", 9000), (" 10k", 10000), (" 11k", 11000), (" 12k", 12000)))
             if ch == "brake":
-                dpg.set_axis_ticks("y_axis_brake", (("  0", 0), ("  1", 1)))
+                dpg.set_axis_ticks("y_axis_brake", (("   0", 0), ("   1", 1)))
    
     elif state.current_view == "histogram":
         real_height_h = dpg.get_item_height("hist_container") / 4
