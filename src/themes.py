@@ -58,7 +58,11 @@ def default_themes():
     with dpg.theme(tag="track_line_theme"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)    # White
-           
+
+    with dpg.theme(tag="delta_theme0"):
+        with dpg.theme_component(dpg.mvLineSeries):
+            dpg.add_theme_color(dpg.mvPlotCol_Line, (255, 255, 255, 200), category=dpg.mvThemeCat_Plots)    # White
+                    
     with dpg.theme(tag="speed_theme0"):
         with dpg.theme_component(dpg.mvLineSeries):
             dpg.add_theme_color(dpg.mvPlotCol_Line, (0, 0, 255), category=dpg.mvThemeCat_Plots)  # Blue
@@ -133,7 +137,7 @@ def hex_to_rgb_text():
 
 def hex_to_rgb():
     hex_enabled = dpg.get_value("hex")
-    channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
+    channels = ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
     used_colors = []
 
     # Delete previous themes
@@ -199,14 +203,14 @@ def bind_themes():
         return
 
     hex_enabled = dpg.get_value("hex")
-    channels = ["speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
+    channels = ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
     
     if state.current_view == "histogram":
-        channels = channels[:4]
+        channels = channels[1:5]
     elif state.current_view == "scatter":
         channels = ["rpm", "glon"]
     elif state.current_view == "stats":
-        return 
+        channels = [] 
 
     tab_suffix = ""
     if state.current_view == "histogram":
@@ -234,8 +238,9 @@ def bind_themes():
                 dpg.bind_item_theme(f"track_line{i}", line_theme)
 
             for channel in channels:
-                line_tag = f"{channel}_line{tab_suffix}{i}"
-                theme_tag = f"{channel}_theme{theme_suffix}"
-                
-                if dpg.does_item_exist(line_tag) and dpg.does_item_exist(theme_tag):
-                    dpg.bind_item_theme(line_tag, theme_tag)
+                if channels:
+                    line_tag = f"{channel}_line{tab_suffix}{i}"
+                    theme_tag = f"{channel}_theme{theme_suffix}"
+                    
+                    if dpg.does_item_exist(line_tag) and dpg.does_item_exist(theme_tag):
+                        dpg.bind_item_theme(line_tag, theme_tag)
