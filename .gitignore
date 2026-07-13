@@ -15,5 +15,7 @@ node_modules
 Code.exe
 *.exe
 
+*.spec
+
 build/
 dist/
