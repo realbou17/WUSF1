@@ -10,7 +10,8 @@ class AppState:
         self.latest_year = 0
         self.possible_years = []
         self.driver_count = 1
-       
+        self.delta = True
+    
         # Data
         self.telemetry_data = []
         self.track = ""
