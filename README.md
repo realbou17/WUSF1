@@ -7,17 +7,17 @@ A new way to exploit F1 data, thanks to [Fastf1](https://docs.fastf1.dev/index.h
 - **GUI Menu**: Allows user to easly choose the session to load, and to navigate through the menus
 - **Multiple representations**
   - 📈 **Graphs**: A traditional and clean way to exploit available data
-    - Speed, RPM, Gear, Throttle, Brake (on-off), Glon, DRS (on-off)
+    - Speed, RPM, Gear, Throttle, Brake (on-off), Glon, DRS (on-off), Delta
   - 📊 **Histograms**: A more direct and concise alternative representation (Speed, RPM, Gear and Throttle only)
   - 🔵 **Scatter**: A visual correlation tool that plots two channels against each other to reveal relationships — ideal for variables like RPM vs Speed (for gear ratios and optimization) or Glon vs Speed (to spot car balance at different speeds)
   - 🔢 **Statistics**: A table showing vital statistics (minimum, maximum, mean, median and standard deviation) of all available channels
   - 🛰️ **Track**: The outline of the track loaded, with a dot representing the position of the car according to mouse position in the graphs
 - **All sessions available**: Analyze telemetry from every session since 2018, including FPs, qualy, races and even winter tests
+- **Comparison**: Compare telemetry between multiple drivers using delta graph
 - **Customization**:
     - Choose between driver's team color or a traditional color palette for telemetry channels
+    - Hide or show delta graph by pressing D on your keyboard	
     - Hide lap time selector fileds for a clearer visualization
-- **Comparison**: Compare telemetry between different drivers
-
 
 # ⚙️ Installation and Requirements
 **Windows and Linux compatible**: Go to the latest release post and you should find both .exe and binary file ready to use, no additional requirements, without needing to have Python installed:
