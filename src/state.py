@@ -11,6 +11,9 @@ class AppState:
         self.possible_years = []
         self.driver_count = 1
         self.delta = True
+        self.last_limits = None
+        self.graph_axes = {}
+        self.syncing_axes = False
     
         # Data
         self.telemetry_data = []
