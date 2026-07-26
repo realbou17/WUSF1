@@ -4,6 +4,29 @@ import numpy as np
 from themes import hex_to_rgb
 from data_loader import get_lap_numbers
 
+def sync_x_axes(master_axis=None):
+    if state.syncing_axes or not state.graph_axes:
+        return
+
+    state.syncing_axes = True
+    try:
+        if not master_axis or not dpg.does_item_exist(master_axis):
+            return
+
+        xmin, xmax = dpg.get_axis_limits(master_axis)
+        state.last_limits = (xmin, xmax)
+
+        for axis in state.graph_axes.values():
+            if axis == master_axis:
+                continue
+            if dpg.does_item_exist(axis):
+                cur_min, cur_max = dpg.get_axis_limits(axis)
+                if abs(cur_min - xmin) > 0.001 or abs(cur_max - xmax) > 0.001:      # Only update if different
+                    dpg.set_axis_limits(axis, xmin, xmax)
+
+    finally:
+        state.syncing_axes = False
+
 def update_plots():
     year = dpg.get_value("year_input")
     year_int = int(year) if year else 2025
@@ -101,11 +124,16 @@ def update_plots():
         dpg.hide_item("plot_container_delta")
 
     if state.current_view == "graphs":
-        for ch, label, tick_fmt, ymin, ymax in channel_config:
+        state.graph_axes = {}
+        for index, (ch, label, tick_fmt, ymin, ymax) in enumerate(channel_config):
             plot = dpg.add_plot(height=state.graph_h, width=-1, tag=f"my_plot_{ch}", parent=f"plot_container_{ch}", crosshairs=True, zoom_mod=True, no_frame=True, no_title=True, no_menus=True)
             if ch == "speed":
                 dpg.add_plot_legend(parent="my_plot_speed")
-            dpg.add_plot_axis(dpg.mvXAxis, parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=True)
+            if index == len(channel_config)-1:
+                dpg.add_plot_axis(dpg.mvXAxis, label="Distance (m)", parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=False)
+            else:
+                dpg.add_plot_axis(dpg.mvXAxis, parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=True)
+            state.graph_axes[ch] = f"x_axis_{ch}"
             if ch == channel_config[-1]:
                 dpg.add_plot_axis(dpg.mvXAxis, label="Distance (m)", parent=plot, tag=f"x_axis_{ch}", no_highlight=True, no_tick_labels=True)
             dpg.add_plot_axis(dpg.mvYAxis, label=label, parent=plot, tag=f"y_axis_{ch}", no_highlight=True, tick_format=tick_fmt)
@@ -117,6 +145,9 @@ def update_plots():
                 dpg.set_axis_ticks("y_axis_rpm", ((" 7k", 7000), (" 8k", 8000), (" 9k", 9000), (" 10k", 10000), (" 11k", 11000), (" 12k", 12000)))
             if ch == "brake":
                 dpg.set_axis_ticks("y_axis_brake", (("   0", 0), ("   1", 1)))
+            if ch == "drs":
+                dpg.set_axis_ticks("y_axis_drs", (("   0", 0), ("   1", 1)))
+            dpg.add_drag_line(tag=f"cursor_line_{ch}", parent=f"my_plot_{ch}", vertical=True, default_value=0.0, color=(255, 255, 255, 160), thickness=1.5, show_label=False, no_inputs=True, no_fit=True, show=False)
    
     elif state.current_view == "histogram":
         real_height_h = dpg.get_item_height("hist_container") / 4
@@ -195,17 +226,49 @@ def update_plots():
         f"Telemetry loaded for {', '.join(driver_lap)} - {state.track}")
     hex_to_rgb()
 
+def update_mouse_position(user_data):  
+    # Detect which plot the mouse is in.
+    hovered = None
+    for ch, axis in state.graph_axes.items():
+        plot_tag = f"my_plot_{ch}"
+        if dpg.does_item_exist(plot_tag) and dpg.is_item_hovered(plot_tag):
+            hovered = axis
+            break
+
+    if hovered:
+        # Unlock zoom for master
+        dpg.set_axis_limits_auto(hovered)
+        sync_x_axes(master_axis=hovered)
+
 def update_car_position(user_data):
-    plot_tags = ["my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_glon", "my_plot_drs"]
+    plot_tags = ["my_plot_delta", "my_plot_speed", "my_plot_rpm", "my_plot_gear", "my_plot_throttle", "my_plot_brake", "my_plot_glon", "my_plot_drs"]
     is_hovered = any(dpg.is_item_hovered(tag)
         for tag in plot_tags
         if dpg.does_item_exist(tag))
-    if not is_hovered:
-        return
+    
+    channels = ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon"]
+    year = dpg.get_value("year_input")
+    if int(year) < 2026:
+        channels.append("drs")
+
     try:
         for i in range(state.driver_count):
             mouse_pos = dpg.get_plot_mouse_pos()
             mouse_x = mouse_pos[0]
+
+            for ch in channels:
+                cursor_tag = f"cursor_line_{ch}"
+                if dpg.does_item_exist(cursor_tag):
+                    dpg.set_value(cursor_tag, mouse_x)
+                    dpg.configure_item(cursor_tag, show=True)
+            
+            if not is_hovered:  # Hide if mouse exits graphs
+                for ch in channels:
+                    cursor_tag = f"cursor_line_{ch}"
+                    if dpg.does_item_exist(cursor_tag):
+                        dpg.configure_item(cursor_tag, show=False)
+                return
+            
             if state.telemetry_data:
                 distance = state.telemetry_data[i]["Distance"]
             idx = min(range(len(distance)), key=lambda i: abs(distance[i] - mouse_x))
