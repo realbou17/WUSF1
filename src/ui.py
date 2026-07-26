@@ -89,6 +89,9 @@ def create_interface():
         # Mouse tracking
         with dpg.handler_registry():
             dpg.add_mouse_move_handler(callback=update_car_position)
+            dpg.add_mouse_move_handler(callback=update_mouse_position)
+            dpg.add_mouse_drag_handler(callback=update_mouse_position)
+            dpg.add_mouse_click_handler(callback=update_mouse_position)
         
         # Mouse tracking for drivers' checkboxes creation
         with dpg.item_handler_registry(tag="driver_tree_regst"):
