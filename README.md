@@ -49,8 +49,9 @@ pip install -r requirements.txt
       _*Note: For more info check [Fastf1 documentation](https://docs.fastf1.dev/events.html)._
 2. Click **'Show Telemetry'** to display data
     - Select the lap scrolling trough the horizontal menu at the top, fastest lap will be displayed in purple and loaded first by default
-3. Choose representation by switching **tabs** in the top left
-4. Happy Telemetry!
+3. Zoom in by dragging the mouse and reset the zoom with a double right click  
+4. Choose representation by switching **tabs** in the top left
+5. Happy Telemetry!
 
 
 
