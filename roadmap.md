@@ -13,7 +13,6 @@ The idea is to keep **updating** the project:
 * Estimate **gear ratios**
 * Track **colored by telemetry**
 * **Weather** conditions
-* Unified **cursor and zooom**
 * Graphs over time
 
 # Future integrations
