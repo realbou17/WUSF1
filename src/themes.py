@@ -1,5 +1,6 @@
 import dearpygui.dearpygui as dpg
 from state import state
+from data_loader import get_tyre_color, get_lap_numbers
 from fastf1 import plotting
 
 def default_themes():
@@ -50,6 +51,14 @@ def default_themes():
     with dpg.theme(tag="transparent_window"):
         with dpg.theme_component(dpg.mvChildWindow):
             dpg.add_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0, 0))
+
+    # Current tab
+    with dpg.theme(tag="tab_active"):
+        with dpg.theme_component(dpg.mvTabButton):
+            dpg.add_theme_color(dpg.mvThemeCol_Tab, (230, 92, 0, 255), category=dpg.mvThemeCat_Core)
+            dpg.add_theme_color(dpg.mvThemeCol_TabHovered, (255, 125, 40, 255), category=dpg.mvThemeCat_Core)
+            dpg.add_theme_color(dpg.mvThemeCol_TabActive, (200, 70, 0, 255), category=dpg.mvThemeCat_Core)
+
     # Custom colors for graphs
     with dpg.theme(tag="track_point_theme"):
         with dpg.theme_component(dpg.mvScatterSeries):
@@ -133,8 +142,36 @@ def hex_to_rgb_text():
         check = f"driver_check_{driver_number}"
 
         if dpg.does_item_exist(check):
-            dpg.bind_item_theme(check, f"driver_check_theme{i}")   
+            dpg.bind_item_theme(check, f"driver_check_theme{i}")  
 
+def hex_to_rgb_tyre():
+    for i, driver in enumerate(state.drivers):
+        colors_by_lap = get_tyre_color(driver)
+        _, fastest_num, _ = get_lap_numbers(driver)
+        for lap_num, hex_color in colors_by_lap.items():
+            if not hex_color:
+                continue
+            if fastest_num is not None and int(lap_num) == int(fastest_num):
+                continue
+            h = str(hex_color).lstrip("#")
+            tag = f"tyre_theme_{h}"
+            if not dpg.does_item_exist(tag) and len(h) >= 6:
+                r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+                hover = (min(r + 30, 255), min(g + 30, 255), min(b + 30, 255), 255)
+                active = (max(r - 30, 0), max(g - 30, 0), max(b - 30, 0), 255)
+                lum = 0.299 * r + 0.587 * g + 0.114 * b
+                text = (25, 25, 30, 255) if lum > 160 else (235, 235, 240, 255)
+                with dpg.theme(tag=tag):
+                    with dpg.theme_component(dpg.mvButton):
+                        dpg.add_theme_color(dpg.mvThemeCol_Button, (r, g, b, 255), category=dpg.mvThemeCat_Core)
+                        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, hover, category=dpg.mvThemeCat_Core)
+                        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, active, category=dpg.mvThemeCat_Core)
+                        dpg.add_theme_color(dpg.mvThemeCol_Text, text, category=dpg.mvThemeCat_Core)
+
+            item = f"lap_button_{i}_{int(lap_num)}"
+            if dpg.does_item_exist(item) and dpg.does_item_exist(tag):
+                dpg.bind_item_theme(item, tag)
+                
 def hex_to_rgb():
     hex_enabled = dpg.get_value("hex")
     channels = ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]
@@ -189,7 +226,7 @@ def hex_to_rgb():
                             dpg.add_theme_color(dpg.mvPlotCol_MarkerFill, rgb_color, category=dpg.mvThemeCat_Plots)
                             outline = (255, 255, 255, 200) if hex_color in used_colors else rgb_color
                             dpg.add_theme_color(dpg.mvPlotCol_MarkerOutline, outline, category=dpg.mvThemeCat_Plots)
-
+                
                 used_colors.append(hex_color)
             except Exception as e:
                 dpg.set_value("result_text", f"Team color error: {e}")
