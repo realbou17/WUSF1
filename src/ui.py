@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
 from state import state
 from data_loader import load_latest_session, is_sprint_weekend, load_session, get_lap_numbers, get_calendar, extract_telemetry, refresh_done
-from themes import hex_to_rgb_text, default_themes
+from themes import hex_to_rgb_text, default_themes, hex_to_rgb_tyre
 from plots import *
 import sys, os
 
@@ -67,6 +67,7 @@ def create_interface():
                     for ch in ["delta", "speed", "rpm", "gear", "throttle", "brake", "glon", "drs"]:
                         with dpg.child_window(tag=f"plot_container_{ch}", width=-1,show=True, border=False):
                             dpg.bind_item_theme(f"plot_container_{ch}", "no_padding_window")
+                            dpg.bind_item_theme("graphs", "tab_active")
                             pass
 
                 # Histogram container
@@ -92,7 +93,7 @@ def create_interface():
             dpg.add_mouse_move_handler(callback=update_mouse_position)
             dpg.add_mouse_drag_handler(callback=update_mouse_position)
             dpg.add_mouse_click_handler(callback=update_mouse_position)
-        
+
         # Mouse tracking for drivers' checkboxes creation
         with dpg.item_handler_registry(tag="driver_tree_regst"):
             dpg.add_item_clicked_handler(callback=refresh_driver_selection)
@@ -159,21 +160,54 @@ def on_resize():
 def switch_view(view):
     state.current_view = view
 
-    view_panels = {
-        "graphs": ["plot_container_delta", "plot_container_speed", "plot_container_rpm", "plot_container_gear",
-                    "plot_container_throttle", "plot_container_brake", "plot_container_glon", "plot_container_drs"],
-        "histogram": ["hist_container"],
-        "scatter": ["rpm_vs_speed", "glon_vs_speed"],
-        "stats": ["stats"]
+def switch_view(view):
+    state.current_view = view
+
+    view_config = {
+        "graphs": {
+            "panels": [
+                "plot_container_delta", "plot_container_speed", "plot_container_rpm", 
+                "plot_container_gear", "plot_container_throttle", "plot_container_brake", 
+                "plot_container_glon", "plot_container_drs"
+            ],
+            "tab_tag": "graphs"
+        },
+        "histogram": {
+            "panels": ["hist_container"],
+            "tab_tag": "histogram"
+        },
+        "scatter": {
+            "panels": ["rpm_vs_speed", "glon_vs_speed"],
+            "tab_tag": "scatter"
+        },
+        "stats": {
+            "panels": ["stats"],
+            "tab_tag": "statistics"
+        }
     }
 
-    for panels_in_view in view_panels.values():
-        for panel in panels_in_view:
+    config = view_config.get(view)
+    if not config:
+        return
+
+    current_tab_tag = config["tab_tag"]
+    current_panels = config["panels"]
+    
+    for tab_config in view_config.values():
+        tag = tab_config["tab_tag"]
+        if dpg.does_item_exist(tag):
+            dpg.bind_item_theme(tag, "main_theme")
+    if current_tab_tag and dpg.does_item_exist(current_tab_tag):
+        dpg.bind_item_theme(current_tab_tag, "tab_active")
+    
+    for tab_config in view_config.values():
+        for panel in tab_config["panels"]:
             if dpg.does_item_exist(panel):
-                if panel in view_panels[view]:
+                if panel in current_panels:
                     dpg.show_item(panel)
                 else:
                     dpg.hide_item(panel)
+
     update_plots()
 
 def toggle_delta():
@@ -312,22 +346,26 @@ def build_lap_selector(container, driver_index, driver_name, callback):
     lap_numbers, fastest_num, lap_time = get_lap_numbers(driver_name)
 
     with dpg.group(horizontal=True, parent=container):
-        dpg.add_text(f"{driver_name}:")
-
-        for lap_num in lap_numbers:
-            button_tag = f"lap_button_{driver_index}_{int(lap_num)}"
-            if dpg.does_item_exist(button_tag):
-                dpg.delete_item(button_tag)
-            dpg.add_button(
-                label=f"L{int(lap_num)} {lap_time[int(lap_num)-1]}",
-                callback=callback,
-                user_data=(driver_index, int(lap_num)),
-                width=state.screen_w*state.LAP_BUTTON_W,
-                height=state.screen_h*state.LAP_BUTTON_H,
-                tag=button_tag
-            )
-            if lap_num == fastest_num:
-                dpg.bind_item_theme(button_tag, "purple_button_theme")
+        with dpg.child_window(width=state.screen_w * state.ABB_W, height=-1, border=False, no_scrollbar=True, tag=f"lap_driver_{driver_index}"):
+            dpg.add_text(f"{driver_name}:", tag=f"lap_driver_text_{driver_index}")
+        with dpg.child_window(width=-1, height=-1, border=False, horizontal_scrollbar=True, tag=f"lap_scroll_{driver_index}"):
+            with dpg.group(horizontal=True):
+                for lap_num in lap_numbers:
+                    button_tag = f"lap_button_{driver_index}_{int(lap_num)}"
+                    if dpg.does_item_exist(button_tag):
+                        dpg.delete_item(button_tag)
+                    dpg.add_button(
+                        label=f"L{int(lap_num)} {lap_time[int(lap_num)-1]}",
+                        callback=callback,
+                        user_data=(driver_index, int(lap_num)),
+                        width=state.screen_w*state.LAP_BUTTON_W,
+                        height=state.screen_h*state.LAP_BUTTON_H,
+                        tag=button_tag
+                        )
+                
+                    if lap_num == fastest_num:
+                        dpg.bind_item_theme(button_tag, "purple_button_theme")
+                hex_to_rgb_tyre()
 
 def callback_select_lap(sender, app_data, user_data):
     i, lap_num = user_data
@@ -425,7 +463,7 @@ def load_telemetry(sender, app_data):
 
     # Build lap selectors
     for i in range(state.driver_count):
-        dpg.add_child_window(width=-1, height=state.screen_h*state.LAP_H, tag=f"lap_selector_container{i+1}", border=False, horizontal_scrollbar=True, parent="lap_tree")
+        dpg.add_child_window(width=-1, height=state.screen_h*state.LAP_H, tag=f"lap_selector_container{i+1}", border=False, horizontal_scrollbar=False, parent="lap_tree")
         dpg.bind_item_theme(f"lap_selector_container{i+1}", "transparent_window")
         build_lap_selector(f"lap_selector_container{i+1}", driver_index=i, driver_name=state.drivers[i], callback=callback_select_lap)
         on_resize()
