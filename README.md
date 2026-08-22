@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
       _*Note: For more info check [Fastf1 documentation](https://docs.fastf1.dev/events.html)._
 2. Click **'Show Telemetry'** to display data
-    - Select the lap scrolling trough the horizontal menu at the top, fastest lap will be displayed in purple and loaded first by default
+    - Select the lap scrolling trough the horizontal menu at the top; each lap will be colored according to the **compound** used, fastest lap will be displayed in **purple** and loaded first by default
 3. **Zoom** in by **dragging** the right mouse click and **reset** the zoom with a **double** left click  
 4. Choose representation by switching **tabs** in the top left
 5. Happy Telemetry!
