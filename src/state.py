@@ -51,6 +51,7 @@ class AppState:
         self.SPACER_W = 0.26
         self.TRACK_W = 0.13
         self.TRACK_H = 0.37
+        self.ABB_W = 0.02
         self.LAP_H = 0.05
         self.LAP_BUTTON_W = 0.07
         self.LAP_BUTTON_H= 0.03
