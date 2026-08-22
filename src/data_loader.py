@@ -96,7 +96,6 @@ def load_latest_race(now):
     state.session_order = ['R', 'Q', 'S', 'SQ', 'SS', 'FP3', 'FP2', 'FP1']
     state.testing = 0
     latest_date = None
-    latest_id = ""
 
     is_sprint_weekend(state.latest_year, state.track)
 
@@ -107,7 +106,7 @@ def load_latest_race(now):
             if session.date < now and len(session.drivers) != 0:
                 if latest_date is None or session.date > latest_date:
                     latest_date = session.date
-                    latest_id = order
+                    state.sessionID = order
                     state.session = session
                     print(f"Latest session detected: {state.track} - {order}")
                     break
@@ -116,9 +115,7 @@ def load_latest_race(now):
 
     if len(session.drivers) == 0:
         state.round_delay +=1
-        load_latest_session(state.round_delay) 
-
-    state.sessionID = latest_id
+        load_latest_session(state.round_delay)
 
 def load_session(year_int, session_input, load):
     try:
@@ -159,6 +156,7 @@ def get_lap_numbers(driver):
         lap_numbers = sorted(driver_laps['LapNumber'].unique().tolist())
         fastest_num = int(driver_laps.pick_fastest()['LapNumber'])
         lap_times = []
+        get_tyre_color(driver)
         for t in driver_laps["LapTime"]:
             if pd.isna(t):
                 lap_times.append("No Time")
@@ -170,7 +168,25 @@ def get_lap_numbers(driver):
     except Exception as exc:
         print(f"The session could not be loaded correctly: {exc}")
         return [],  None, []
-    
+
+def get_tyre_color(driver):
+    try:
+        driver_laps = state.session.laps.pick_driver(driver)
+        colors_by_lap = {}
+        for idx, row in driver_laps.iterrows():
+            try:
+                lap_num = int(row["LapNumber"])
+                compound = row["Compound"]
+                if pd.isna(compound):
+                    continue
+                colors_by_lap[lap_num] = fastf1.plotting.get_compound_color(str(compound), session=state.session)
+            except Exception:
+                continue
+        return colors_by_lap
+    except Exception as exc:
+        print(f"Compounds could not be loaded correctly: {exc}")
+        return [],  None, []
+
 def get_calendar(year):
     if year >= 2018:
         state.schedule = fastf1.get_event_schedule(year, include_testing=True)
